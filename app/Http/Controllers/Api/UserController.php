@@ -86,6 +86,17 @@ class UserController extends Controller
         return Result::success("留言成功");
     }
 
+    # 获取我的留言
+    public function getBoard(): JsonResponse
+    {
+        $userId = auth('api')->id();
+        $data = Board::query()->where('user_id',$userId)->select(['text','created_at'])->get();
+        if (empty($data)){
+            return Result::success([]);
+        }
+        return Result::success($data);
+    }
+
     # 获取中国梦个人信息
     public function getDream(): JsonResponse
     {

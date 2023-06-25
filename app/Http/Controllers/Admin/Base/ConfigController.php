@@ -57,16 +57,21 @@ class ConfigController extends Controller
 
     /**
      * 根据key值获取
-     * @param $key
      * @return JsonResponse
      * author Yan
      */
-    public function getOne($key): JsonResponse
+    public function getOne(): JsonResponse
     {
+        $params = request()->all();
+        $key = $params['key'];
+        if (empty($key)) {
+            return Result::fail('参数错误');
+        }
         $data = $this->configService->getOne($key);
 
         return Result::success($data);
     }
+
     /**
      * 根据key值获取
      * @param $key

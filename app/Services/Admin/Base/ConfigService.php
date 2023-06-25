@@ -4,7 +4,7 @@
 namespace App\Services\Admin\Base;
 
 
-use App\Models\Base\Config;
+use App\Models\Config;
 
 class ConfigService
 {

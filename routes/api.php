@@ -8,12 +8,11 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BankController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\ChatGptController;
+use App\Http\Controllers\Api\GoodsController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\MidJourneyController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\OrderController;
-use App\Http\Controllers\Api\PingController;
-use App\Http\Controllers\Api\PromptController;
 use App\Http\Controllers\Api\RecommendController;
 use App\Http\Controllers\Api\SignController;
 use App\Http\Controllers\Api\UserController;
@@ -65,13 +64,15 @@ Route::middleware(['api.user'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     # 获取配置
     Route::get('getConfig', [ConfigController::class, 'getAll']);
+    # 获取公告
+    Route::get('getOne', [ConfigController::class, 'getOne']);
     # 个人中心
     Route::prefix('user')->group(function () {
-        # 我的助学 【我的下级】
+        # 我的下级
         Route::get('myBelow', [UserController::class, 'myBelow']);
         # 我的收支明细
         Route::get('walletDetails', [UserController::class, 'walletDetails']);
-        # 分享【我的助学-立即分享】
+        # 分享
         Route::get('share', [UserController::class, 'share']);
         # 查询当前我的连续签到数据
         Route::get('getSignData', [SignController::class, 'getSignData']);
@@ -83,6 +84,8 @@ Route::middleware(['api.user'])->group(function () {
         Route::post('addRealName', [UserController::class, 'addRealName']);
         # 设置留言
         Route::post('setBoard', [UserController::class, 'setBoard']);
+        # 获取我的留言
+        Route::get('getBoard', [UserController::class, 'getBoard']);
         # 获取中国梦个人信息
         Route::get('getDream', [UserController::class, 'getDream']);
         # 设置中国梦个人信息
@@ -96,6 +99,15 @@ Route::middleware(['api.user'])->group(function () {
         Route::post('addBank', [BankController::class, 'addBank']);
         # 删除银行卡
         Route::post('delBank', [BankController::class, 'delBank']);
+    });
+    # 产品
+    Route::prefix('goods')->group(function () {
+        # 指定产品列表
+        Route::get('list', [GoodsController::class, 'list']);
+        # 添加银行卡
+        Route::post('addBank', [GoodsController::class, 'addBank']);
+        # 删除银行卡
+        Route::post('delBank', [GoodsController::class, 'delBank']);
     });
     # 订单
     Route::prefix('order')->group(function () {
