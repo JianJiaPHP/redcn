@@ -70,6 +70,10 @@ Route::middleware(['api.user'])->group(function () {
     Route::prefix('user')->group(function () {
         # 我的下级
         Route::get('myBelow', [UserController::class, 'myBelow']);
+        # 我的一级下级信息
+        Route::get('myBelowOne', [UserController::class, 'myBelowOne']);
+        # 我的二级下级信息
+        Route::get('myBelowTwo', [UserController::class, 'myBelowTwo']);
         # 我的收支明细
         Route::get('walletDetails', [UserController::class, 'walletDetails']);
         # 分享
