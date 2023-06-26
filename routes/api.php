@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\BankController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\ChatGptController;
 use App\Http\Controllers\Api\GoodsController;
+use App\Http\Controllers\Api\IncomeController;
+use App\Http\Controllers\Api\IndexController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\MidJourneyController;
 use App\Http\Controllers\Api\NewsController;
@@ -48,6 +50,12 @@ Route::group([], function () {
 });
 # 需要身份验证    需要登录
 Route::middleware(['api.user'])->group(function () {
+    # 首页资料
+    Route::get('index', [IndexController::class, 'index']);
+    # 赠送金额页面数据
+    Route::get('bonusData', [IncomeController::class, 'bonusData']);
+    # 福利介绍页面
+    Route::get('welfare',[IndexController::class,'welfare']);
     # 轮询查询订单状态
     Route::get('query/results', [PayController::class, 'queryResults']);
     # 修改密码
