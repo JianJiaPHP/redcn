@@ -102,6 +102,10 @@ Route::middleware(['api.user'])->group(function () {
         Route::get('getDream', [UserController::class, 'getDream']);
         # 设置中国梦个人信息
         Route::post('setDream', [UserController::class, 'setDream']);
+        # 我的余额流水
+        Route::get('userAccountList', [IncomeController::class, 'userAccountList']);
+        # 奖金钱包流水
+        Route::get('userAccountBonusList', [IncomeController::class, 'userAccountBonusList']);
     });
     # 银行卡
     Route::prefix('bank')->group(function () {
@@ -116,10 +120,10 @@ Route::middleware(['api.user'])->group(function () {
     Route::prefix('goods')->group(function () {
         # 指定产品列表
         Route::get('list', [GoodsController::class, 'list']);
-        # 添加银行卡
-        Route::post('addBank', [GoodsController::class, 'addBank']);
-        # 删除银行卡
-        Route::post('delBank', [GoodsController::class, 'delBank']);
+        # 产品购买记录
+        Route::get('payLog', [OrderController::class, 'payLog']);
+        # 产品收益记录
+        Route::get('incomeLog', [OrderController::class, 'incomeLog']);
     });
     # 订单
     Route::prefix('order')->group(function () {
