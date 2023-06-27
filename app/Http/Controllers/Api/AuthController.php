@@ -27,7 +27,24 @@ class AuthController extends Controller
         $codeImg = app('captcha')->create('default', true);
         return Result::success(['captcha' => $codeImg]);
     }
-
+    # 验证交易密码是否正确
+    public function checkPayPassword(): JsonResponse
+    {
+        $params = request()->all();
+        $validator = Validator::make($params, [
+            'pay_password' => 'required',
+        ], [
+            'pay_password.required' => '交易密码必填',
+        ]);
+        if ($validator->fails()) {
+            return Result::fail($validator->errors()->first());
+        }
+        $user = auth('api')->user();
+        if (!Hash::check(md5($params['pay_password']), $user->pay_password)) {
+            return Result::fail('交易密码错误');
+        }
+        return Result::success();
+    }
     /**
      * 修改密码
      * @throws ApiException

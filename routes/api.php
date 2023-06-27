@@ -41,12 +41,6 @@ Route::group([], function () {
     Route::post('register', [AuthController::class, 'register']);
     # 支付宝异步回调
     Route::post('notify', [PayController::class, 'notify']);
-    # 新闻协议接口
-    Route::get('newsGet', [MeController::class, 'newsGet']);
-    # 咨询列表
-    Route::get('newList', [NewsController::class, 'newList']);
-    # 获取协议信息接口
-    Route::get('getAgreement', [NewsController::class, 'getAgreement']);
 });
 # 需要身份验证    需要登录
 Route::middleware(['api.user'])->group(function () {
@@ -58,6 +52,8 @@ Route::middleware(['api.user'])->group(function () {
     Route::get('welfare',[IndexController::class,'welfare']);
     # 轮询查询订单状态
     Route::get('query/results', [PayController::class, 'queryResults']);
+    # 验证交易密码是否正确
+    Route::post('checkPayPassword', [AuthController::class, 'checkPayPassword']);
     # 修改密码
     Route::post('changePassword', [AuthController::class, 'changePassword']);
     # 修改交易密码
@@ -143,11 +139,6 @@ Route::middleware(['api.user'])->group(function () {
         Route::get('goodsClass', [OrderController::class, 'goodsClass']);
         # 查询指定分类套餐信息
         Route::get('classGoodsList', [OrderController::class, 'classGoodsList']);
-    });
-
-    Route::prefix('message')->group(function () {
-        # 我的消息
-        Route::get('myMessage', [MessageController::class, 'myMessage']);
     });
 });
 
