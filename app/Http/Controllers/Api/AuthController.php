@@ -227,6 +227,11 @@ class AuthController extends Controller
             }
             # 上级邀请奖励
             if ($invitation > 0) {
+                # 查询是否有锁
+                $lock = Redis::get("invitation_award_" . $user['id']);
+                if ($lock){
+                    throw new ApiException("注册失败请重试！");
+                }
                 // 尝试获取锁
                 $lockAcquired = Redis::set("invitation_award_" . $user['id'], 1, 'EX', 10, 'NX');
                 if ($lockAcquired){

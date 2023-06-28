@@ -15,6 +15,7 @@ use App\Services\Api\UserAccountService;
 use App\Utils\Result;
 use DB;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Redis;
 
 class IncomeController
 {
@@ -202,9 +203,19 @@ class IncomeController
 
 
     # 邀请奖励领取
+
+    /**
+     * @throws ApiException
+     */
     public function bonusReceive(): JsonResponse
     {
         $userId = auth('api')->id();
+        // 尝试获取锁
+        $lockAcquired = Redis::get("bonusReceive" . $userId['id']);
+        if ($lockAcquired){
+            throw new ApiException("领取失败！请重试");
+        }
+        Redis::set("goodsReceive" . $userId['id'], 1, 'EX', 10, 'NX');
         # 查询上级邀请人邀请了多少人了 根据邀请条件给予奖励
         $count = Users::query()->where('p_id', $userId)->count();
         # 查询user领取到了第几阶段
@@ -222,18 +233,30 @@ class IncomeController
                 }
                 # 更新user表
                 Users::query()->where('id', $userId)->update(['b_jie' => $bJie]);
+                # 删除锁
+                Redis::del("bonusReceive" . $userId['id']);
                 return Result::success('领取成功');
-            } else {
-                return Result::fail('未达到领取条件');
             }
         }
+        Redis::del("bonusReceive" . $userId['id']);
         return Result::fail('未达到领取条件');
     }
 
     # 业绩奖励领取
+
+    /**
+     * @throws ApiException
+     */
     public function goodsReceive(): JsonResponse
     {
         $userId = auth('api')->id();
+        // 尝试获取锁
+        $lockAcquired = Redis::get("goodsReceive" . $userId['id']);
+        if ($lockAcquired){
+            throw new ApiException("领取失败！请重试");
+        }
+        Redis::set("goodsReceive" . $userId['id'], 1, 'EX', 10, 'NX');
+
         # 查询上级邀请人邀请了多少人了 根据邀请条件给予奖励
         $count = Users::query()->where('p_id', $userId)->pluck('id');
         # 查询我的下级 购买产品的金额
@@ -253,11 +276,13 @@ class IncomeController
                 }
                 # 更新user表
                 Users::query()->where('id', $userId)->update(['aJie' => $aJie]);
+                # 删除锁
+                Redis::del("goodsReceive" . $userId['id']);
                 return Result::success('领取成功');
-            } else {
-                return Result::fail('未达到领取条件');
             }
         }
+        # 删除锁
+        Redis::del("goodsReceive" . $userId['id']);
         return Result::fail('未达到领取条件');
     }
 
