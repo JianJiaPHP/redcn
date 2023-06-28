@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
 use App\Http\Controllers\Controller;
+use App\Models\AccumulateConfig;
 use App\Models\Config;
 use App\Models\Users;
 use App\Services\Api\UserAccountBonusService;

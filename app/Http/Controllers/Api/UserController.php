@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Board;
+use App\Models\UserBankCards;
 use App\Models\UserInfo;
 use App\Models\Users;
 use App\Utils\Result;
@@ -223,6 +224,14 @@ class UserController extends Controller
             return Result::fail("设置失败");
         }
         return Result::success("设置成功");
+    }
+
+    # 用户银行卡信息
+    public function getBankCard(): JsonResponse
+    {
+        $userId = auth('api')->id();
+        $data = UserBankCards::query()->where('user_id', $userId)->get();
+        return Result::success($data);
     }
 
     # 生成提现订单号 不能重复

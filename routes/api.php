@@ -70,6 +70,18 @@ Route::middleware(['api.user'])->group(function () {
     Route::get('getConfig', [ConfigController::class, 'getAll']);
     # 获取公告
     Route::get('getOne', [ConfigController::class, 'getOne']);
+    # 余额提现页数据
+    Route::get('withdrawData', [IncomeController::class, 'withdrawData']);
+    # 余额提现明细
+    Route::get('withdrawList', [IncomeController::class, 'withdrawList']);
+    # 奖励钱包提现页数据
+    Route::get('withdrawBonusData', [IncomeController::class, 'withdrawBonusData']);
+    # 发起余额钱包提现
+    Route::post('createWithdraw', [IncomeController::class, 'createWithdraw']);
+    # 福利中心 领取邀请人数奖励
+    Route::post('bonusReceive', [IncomeController::class, 'bonusReceive']);
+    # 福利中心 业绩达到要求领取奖励
+    Route::post('goodsReceive', [IncomeController::class, 'goodsReceive']);
     # 个人中心
     Route::prefix('user')->group(function () {
         # 我的下级
@@ -102,6 +114,13 @@ Route::middleware(['api.user'])->group(function () {
         Route::get('userAccountList', [IncomeController::class, 'userAccountList']);
         # 奖金钱包流水
         Route::get('userAccountBonusList', [IncomeController::class, 'userAccountBonusList']);
+        # 获取我的银行卡信息
+        Route::get('getBankCard', [UserController::class, 'getBankCard']);
+
+        # 奖金钱包日收益列表
+        Route::get('bonusList', [IncomeController::class, 'bonusList']);
+        # 余额钱包日收益列表
+        Route::get('balanceList', [IncomeController::class, 'balanceList']);
     });
     # 银行卡
     Route::prefix('bank')->group(function () {
@@ -123,22 +142,7 @@ Route::middleware(['api.user'])->group(function () {
     });
     # 订单
     Route::prefix('order')->group(function () {
-        # 我的加入社群商品信息
-        Route::get('membershipGoods', [OrderController::class, 'membershipGoods']);
-        # GPT商品列表
-        Route::get('gptGoods', [OrderController::class, 'gptGoods']);
-        # 指定商品详细信息
-        Route::get('goodsDetail', [OrderController::class, 'goodsDetail']);
-        # 发起订单
-        Route::post('createOrder', [OrderController::class, 'createOrder']);
-        # 订单详情
-        Route::get('orderDetail', [OrderController::class, 'orderDetail']);
-        # 订单列表
-        Route::get('myOrderList', [OrderController::class, 'myOrderList']);
-        # 查询商品分类
-        Route::get('goodsClass', [OrderController::class, 'goodsClass']);
-        # 查询指定分类套餐信息
-        Route::get('classGoodsList', [OrderController::class, 'classGoodsList']);
+
     });
 });
 

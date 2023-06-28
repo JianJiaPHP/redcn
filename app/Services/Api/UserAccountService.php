@@ -4,11 +4,46 @@ namespace App\Services\Api;
 
 use App\Exceptions\ApiException;
 use App\Models\UserAccount;
+use App\Models\UserGoodsLog;
 use App\Models\Users;
 use Exception;
 
 class UserAccountService
 {
+
+    public static function productIncome($params)
+    {
+        try {
+            $userId = $params['user_id'];
+            $id = $params['id'];
+            $income = $params['income'];
+            $toDay = date('Y-m-d');
+            # 查询该用户改产品今日记录
+            $exits = UserGoodsLog::query()->where(['user_id' => $userId, 'user_goods_id' => $id, 'date' => $toDay])->exists();
+            if ($exits) {
+                \Log::error('产品定时收益异常：1');
+                return '';
+            }
+            # 添加记录
+            $add = UserGoodsLog::query()->create(['user_id' => $userId, 'user_goods_id' => $id, 'income' => $income, 'date' => $toDay]);
+            if (!$add) {
+                \Log::error('产品定时收益异常：2');
+
+                return '';
+            }
+            self::userAccount($userId, $income, '产品定时收益', 2);
+            if ($toDay == date('Y-m-d',$params['end_date'])){
+                # 最后一天收益奖励
+                self::userAccount($userId, $params['end_rewards'], '产品最后一天收益奖励定时收益', 2);
+            }
+            return ['code' => 200, 'msg' => '操作成功！'];
+        } catch (Exception $e) {
+            \Log::error('产品定时收益异常：' . $e->getMessage());
+        }
+    }
+
+    # 产品定时收益
+
     /**
      * User: Yan
      * @param int $user_id 用户id
@@ -37,7 +72,7 @@ class UserAccountService
             $addRes = UserAccount::query()->create($createAiLog);
             //如果添加成功-更新用户表
             if ($addRes) {
-                Users::query()->where('id', $user_id)->update(['bonus' => $total_balance]);
+                Users::query()->where('id', $user_id)->update(['balance' => $total_balance]);
             } else {
                 throw new ApiException('用户资产明细更新失败');
             }

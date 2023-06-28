@@ -2,7 +2,7 @@
 
 namespace App\Console;
 
-use App\Console\Commands\SupplierQueryTask;
+use App\Console\Commands\DayIncome;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -14,7 +14,7 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        SupplierQueryTask::class,
+        DayIncome::class,
     ];
 
     /**
@@ -25,8 +25,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        # 每一个小时运行任务
-        $schedule->command('command:SupplierQueryTask')->hourly();
+        # 每天00:05执行
+        $schedule->command('command:DayIncome')->dailyAt('00:05');
     }
 
     /**
