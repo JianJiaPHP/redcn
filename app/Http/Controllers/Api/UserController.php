@@ -42,7 +42,7 @@ class UserController extends Controller
         $totalPidOne = count($userPidOne);
         # 一级列表
         $userPidOneList = Users::query()->whereIn('id', $userPidOne)
-            ->select(['id', 'nickname', 'avatar', 'register_date', 'created_at'])
+            ->select(['id', 'nickname','phone', 'avatar', 'register_date', 'created_at'])
             ->paginate(request()->query('limit', 15));
         foreach ($userPidOneList as &$value) {
             $value['total_income'] = Users::getUserIdIncome($value['id']);
@@ -70,7 +70,7 @@ class UserController extends Controller
         $totalIncomeTwo = Users::getMySubordinateTotalIncome($user['id']);
         # 二级列表
         $userPidTwoList = Users::query()->whereIn('id', $userPidTwo)
-            ->select(['id', 'nickname', 'avatar', 'register_date', 'created_at'])
+            ->select(['id', 'nickname','phone', 'avatar', 'register_date', 'created_at'])
             ->paginate(request()->query('limit', 15));
         foreach ($userPidTwoList as &$value1) {
             $value1['total_income'] = Users::getUserIdIncome($value1['id']);

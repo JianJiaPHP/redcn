@@ -18,7 +18,7 @@ class IndexController
         # 获取当前页面的地址 不包括路由
         $url = env('APP_URL');
         # 首页视频
-        $video = [$url."/video/index.mp4", $url."/video/video2.mp4"];
+        $video = [$url . "/video/index.mp4", $url . "/video/video2.mp4"];
         #$video 随机去取一个
         $videoUrl = $video[array_rand($video)];
         $officialNews = NewD::query()->where('key_name', 'guanfang')->select(['name', 'content_text'])->first();
@@ -34,8 +34,8 @@ class IndexController
     # 福利介绍页
     public function welfare(): JsonResponse
     {
-        $tuanDui = AccumulateConfig::query()->where('type', 1)->select(['id', 'key'])->get();
-        $yaoQin = AccumulateConfig::query()->where('type', 2)->select(['id', 'key'])->get();
+        $tuanDui = AccumulateConfig::query()->where('type', 1)->select(['id', 'key', 'num'])->get();
+        $yaoQin = AccumulateConfig::query()->where('type', 2)->select(['id', 'key', 'num'])->get();
         # 收益信息
         $yangLao = Goods::query()->where('type', 1)->select(['id', 'amount', 'income', 'validity_day', 'end_rewards'])->get();
         foreach ($yangLao as &$v) {
