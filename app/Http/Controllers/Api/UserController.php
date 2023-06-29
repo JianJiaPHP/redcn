@@ -136,13 +136,13 @@ class UserController extends Controller
         $validator = validator($params, [
             'text' => 'required',
         ], [
-            'real_name.required' => '留言板不能为空',
+            'text.required' => '留言板不能为空',
         ]);
         if ($validator->fails()) {
             return Result::fail($validator->errors()->first());
         }
         $userId = auth('api')->id();
-        $res = Board::query()->create(['text' => $params['text'], 'user_id' => $userId]);
+        $res = Board::query()->updateOrCreate(['user_id' => $userId],['text' => $params['text']]);
         if (!$res) {
             return Result::fail("留言失败");
         }
@@ -153,7 +153,7 @@ class UserController extends Controller
     public function getBoard(): JsonResponse
     {
         $userId = auth('api')->id();
-        $data = Board::query()->where('user_id', $userId)->select(['text', 'created_at'])->get();
+        $data = Board::query()->where('user_id', $userId)->value('text');
         if (empty($data)) {
             return Result::success([]);
         }
