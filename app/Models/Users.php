@@ -78,4 +78,10 @@ class Users extends Authenticatable implements JWTSubject
     public static function getUserIdIncome($userId){
         return UserAccount::query()->where('type',5)->where('user_id',$userId)->sum('profit');
     }
+
+    # 头像切割
+    public function getAvatarAttribute($value)
+    {
+        return env('APP_URL') .'/'. $value;
+    }
 }

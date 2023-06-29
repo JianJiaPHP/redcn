@@ -243,6 +243,7 @@ class AuthController extends Controller
             # 注册成功赠送奖励金6000元
             UserAccountBonusService::userAccount($user['id'], (new Config())->getAll()['invitation.value'], '注册成功赠送奖励金', 2);
             DB::commit();
+            $user->token = auth('api')->login($user);
             return $user;
         } catch (Exception $e) {
             throw new ApiException($e->getMessage());
