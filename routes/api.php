@@ -143,13 +143,7 @@ Route::middleware(['api.user'])->group(function () {
     # 订单
     Route::prefix('order')->group(function () {
         # 购买商品统一下单
-        Route::post('create', [OrderController::class, 'create']);
-        # 查询订单支付情况
-        Route::get('query', [OrderController::class, 'query']);
-        # 订单列表
-        Route::get('list', [OrderController::class, 'list']);
-        # 订单详情
-        Route::get('detail', [OrderController::class, 'detail']);
+        Route::post('payGoods', [OrderController::class, 'payGoods']);
     });
 });
 

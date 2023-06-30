@@ -232,7 +232,6 @@ class AuthController extends Controller
                 if ($lock){
                     throw new ApiException("注册失败请重试！");
                 }
-                // 尝试获取锁
                 $lockAcquired = Redis::set("invitation_award_" . $user['id'], 1, 'EX', 10, 'NX');
                 if ($lockAcquired){
                     UserAccountBonusService::userAccount($invitation, (new Config())->getAll()['invitation.award'], '邀请新用户奖励', 1, $user['id']);
