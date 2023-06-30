@@ -5,13 +5,19 @@ namespace App\Http\Controllers\Api;
 # 订单管理
 use App\Exceptions\ApiException;
 use App\Models\Goods;
+use App\Models\Recharge;
+use App\Models\RechargeLog;
 use App\Models\UserAccount;
 use App\Models\UserGoods;
 use App\Models\UserGoodsLog;
+use App\Services\Api\Pay1Service;
+use App\Services\Api\Pay2Service;
+use App\Services\Api\PayService;
 use App\Services\Api\UserAccountService;
 use App\Utils\Result;
 use Carbon\Carbon;
 use DB;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Redis;
 
@@ -137,7 +143,194 @@ class OrderController
             Redis::del("payGoods_" . $userId);
             return Result::fail($e->getMessage());
         }
+    }
 
+    # 充值渠道
+    public function payChannel(): JsonResponse
+    {
+        $data = Recharge::query()->where('is_open', 1)->select(['id', 'name'])->get();
+        return Result::success($data);
+    }
+
+
+    # 充值统一下单
+
+    /**
+     * @throws ApiException
+     */
+    public function payRecharge()
+    {
+        $userId = auth('api')->id();
+        $lock = Redis::get("payRecharge_" . $userId);
+        if ($lock) {
+            throw new ApiException("请勿点击太频繁，请稍后再试！");
+        }
+        # 加锁
+        Redis::set("payRecharge_" . $userId, 1, 'EX', 3, 'NX');
+        try {
+            $params = request()->all();
+            # 验证器
+            $validator = validator(request()->all(), [
+                'recharge_id' => 'required',
+                # 金额 最多2位小数 不能为负数
+                'amount'      => 'required|numeric|regex:/^[0-9]+(.[0-9]{1,2})?$/',
+                'type'        => 'required|in:1,2'
+            ], [
+                'recharge_id.required' => '充值渠道不能为空',
+                'amount.required'      => '充值金额不能为空',
+                'amount.numeric'       => '充值金额必须为数字',
+                'amount.regex'         => '充值金额最多2位小数',
+                'type.required'        => '充值类型不能为空',
+                'type.in'              => '充值类型错误',
+            ]);
+            if ($validator->fails()) {
+                Redis::del("payRecharge_" . $userId);
+                return Result::fail($validator->errors()->first());
+            }
+            # 查询充值渠道
+            $rechargeGo = Recharge::query()->where('id', $params['recharge_id'])->value('go');
+            # 生成订单号
+            $order_no = $this->createOrderNo();
+
+            switch ($rechargeGo) {
+                case 1:
+                    $serve = new PayService();
+                    try {
+                        $res = $serve->orderCreate($params['amount'], $order_no, $params['type']);
+                    } catch (GuzzleException $e) {
+                        Redis::del("payRecharge_" . $userId);
+                        throw new ApiException($e->getMessage());
+                    }
+                    break;
+                case 2:
+                    $serve = new Pay1Service();
+                    try {
+                        $res = $serve->orderCreate($params['amount'], $order_no, $params['type']);
+                    } catch (GuzzleException $e) {
+                        Redis::del("payRecharge_" . $userId);
+                        throw new ApiException($e->getMessage());
+                    }
+                    break;
+                case 3:
+                    $serve = new Pay2Service();
+                    try {
+                        $res = $serve->orderCreate($params['amount'], $order_no, $params['type']);
+                    } catch (GuzzleException $e) {
+                        Redis::del("payRecharge_" . $userId);
+                        throw new ApiException($e->getMessage());
+                    }
+                    break;
+                default:
+                    Redis::del("payRecharge_" . $userId);
+                    throw new ApiException("充值渠道不存在");
+            }
+            if (empty($res)) {
+                Redis::del("payRecharge_" . $userId);
+                throw new ApiException("充值失败");
+            }
+            # 创建支付订单
+            $rs = RechargeLog::query()->create([
+                'user_id'     => $userId,
+                'order_no'    => $order_no,
+                'amount'      => $params['amount'],
+                'zhifu_no'    => $res['tradeNo'],
+                'status'      => 1,
+                'recharge_id' => $res['recharge_id']
+            ]);
+            if (!$rs) {
+                Redis::del("payRecharge_" . $userId);
+                throw new ApiException("充值失败");
+            }
+            Redis::del("payRecharge_" . $userId);
+            return Result::success($res);
+        } catch (\Exception $e) {
+            #删锁
+            Redis::del("payRecharge_" . $userId);
+            return Result::fail($e->getMessage());
+        }
+    }
+
+    # 生成订单号
+    public function createOrderNo(): string
+    {
+        $order_no = 'ddd' . rand(100000, 999999) . time();
+        # 查询订单号是否有重复
+        $orderInfo = RechargeLog::query()->where('order_no', $order_no)->exists();
+        if ($orderInfo) {
+            $this->createOrderNo();
+        }
+        return $order_no;
+    }
+
+    # 查询充值订单状态
+
+
+    public function queryRecharge(): JsonResponse
+    {
+        try {
+            $params = request()->all();
+            # 验证器
+            $validator = validator(request()->all(), [
+                'order_no' => 'required',
+            ], [
+                'order_no.required' => '订单号不能为空',
+            ]);
+            if ($validator->fails()) {
+                return Result::fail($validator->errors()->first());
+            }
+            $userId = auth('api')->id();
+            # 查询订单
+            $orderInfo = RechargeLog::query()
+                ->where('zhifu_no', $params['order_no'])
+                ->where('user_id', $userId)
+                ->select(['id','recharge_id','status'])
+                ->first();
+            if (!$orderInfo) {
+                return Result::fail("订单不存在");
+            }
+            if ($orderInfo['status'] == 1){
+                # 查询支付渠道
+                $res = false;
+                switch ($orderInfo['recharge_id']) {
+                    case 1:
+                        $serve = new PayService();
+                        try {
+                            $res = $serve->orderQuery($params['order_no']);
+                        } catch (GuzzleException $e) {
+                            throw new ApiException($e->getMessage());
+                        }
+                        break;
+                    case 2:
+                        $serve = new Pay1Service();
+                        try {
+                            $res = $serve->orderQuery($params['order_no']);
+                        } catch (GuzzleException $e) {
+                            throw new ApiException($e->getMessage());
+                        }
+                        break;
+                    case 3:
+                        $serve = new Pay2Service();
+                        try {
+                            $res = $serve->orderQuery($params['order_no']);
+                        } catch (GuzzleException $e) {
+                            throw new ApiException($e->getMessage());
+                        }
+                        break;
+                    default:
+                        throw new ApiException("充值渠道不存在");
+                }
+                if ($res){
+                    RechargeLog::query()
+                        ->where('zhifu_no', $params['order_no'])
+                        ->where('user_id', $userId)
+                        ->update(['status'=>2]);
+                    return Result::success(2);
+                }
+            }
+            return Result::success($orderInfo['status']);
+        }catch (\Exception $e){
+            return Result::fail($e->getMessage());
+        }
 
     }
 }

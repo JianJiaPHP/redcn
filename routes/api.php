@@ -1,21 +1,14 @@
 <?php
 
 use App\Http\Controllers\Admin\Base\ConfigController;
-use App\Http\Controllers\Admin\Base\MeController;
 use App\Http\Controllers\Admin\Base\PayController;
 use App\Http\Controllers\Admin\Base\UploadController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BankController;
-use App\Http\Controllers\Api\ChatController;
-use App\Http\Controllers\Api\ChatGptController;
 use App\Http\Controllers\Api\GoodsController;
 use App\Http\Controllers\Api\IncomeController;
 use App\Http\Controllers\Api\IndexController;
-use App\Http\Controllers\Api\MessageController;
-use App\Http\Controllers\Api\MidJourneyController;
-use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\OrderController;
-use App\Http\Controllers\Api\RecommendController;
 use App\Http\Controllers\Api\SignController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
@@ -39,8 +32,8 @@ Route::group([], function () {
     Route::get('captcha', [AuthController::class, 'captcha']);
     # 注册
     Route::post('register', [AuthController::class, 'register']);
-    # 支付宝异步回调
-    Route::post('notify', [PayController::class, 'notify']);
+    # 异步回调
+    Route::any('notify', [PayController::class, 'notify']);
 });
 # 需要身份验证    需要登录
 Route::middleware(['api.user'])->group(function () {
@@ -144,6 +137,12 @@ Route::middleware(['api.user'])->group(function () {
     Route::prefix('order')->group(function () {
         # 购买商品统一下单
         Route::post('payGoods', [OrderController::class, 'payGoods']);
+        # 充值渠道列表
+        Route::get('payChannel', [OrderController::class, 'payChannel']);
+        # 充值统一下单
+        Route::post('payRecharge', [OrderController::class, 'payRecharge']);
+        # 查询充值订单状态
+        Route::get('queryRecharge', [OrderController::class, 'queryRecharge']);
     });
 });
 
