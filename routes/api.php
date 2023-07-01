@@ -34,6 +34,12 @@ Route::group([], function () {
     Route::post('register', [AuthController::class, 'register']);
     # 异步回调
     Route::any('notify', [PayController::class, 'notify']);
+
+    Route::prefix('callback')->group(function () {
+        Route::any('pay', [OrderController::class, 'callbackPay']);
+        Route::any('pay1', [OrderController::class, 'callbackPay1']);
+        Route::any('pay2', [OrderController::class, 'callbackPay2']);
+    });
 });
 # 需要身份验证    需要登录
 Route::middleware(['api.user'])->group(function () {

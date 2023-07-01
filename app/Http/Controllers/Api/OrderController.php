@@ -158,7 +158,7 @@ class OrderController
     /**
      * @throws ApiException
      */
-    public function payRecharge()
+    public function payRecharge(): JsonResponse
     {
         $userId = auth('api')->id();
         $lock = Redis::get("payRecharge_" . $userId);
@@ -263,8 +263,6 @@ class OrderController
     }
 
     # 查询充值订单状态
-
-
     public function queryRecharge(): JsonResponse
     {
         try {
@@ -283,12 +281,12 @@ class OrderController
             $orderInfo = RechargeLog::query()
                 ->where('zhifu_no', $params['order_no'])
                 ->where('user_id', $userId)
-                ->select(['id','recharge_id','status'])
+                ->select(['id', 'recharge_id', 'status'])
                 ->first();
             if (!$orderInfo) {
                 return Result::fail("订单不存在");
             }
-            if ($orderInfo['status'] == 1){
+            if ($orderInfo['status'] == 1) {
                 # 查询支付渠道
                 $res = false;
                 switch ($orderInfo['recharge_id']) {
@@ -319,18 +317,69 @@ class OrderController
                     default:
                         throw new ApiException("充值渠道不存在");
                 }
-                if ($res){
+                if ($res) {
                     RechargeLog::query()
                         ->where('zhifu_no', $params['order_no'])
                         ->where('user_id', $userId)
-                        ->update(['status'=>2]);
+                        ->update(['status' => 2]);
                     return Result::success(2);
                 }
             }
             return Result::success($orderInfo['status']);
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return Result::fail($e->getMessage());
         }
 
+    }
+
+
+    # 通道1回调
+    public function callbackPay()
+    {
+        try {
+            $params = request()->all();
+            \Log::info('通道1回调参数', $params);
+            $model = new PayService();
+            $res = $model->callback($params);
+            if ($res) {
+                return 'success';
+            }
+            return 'fail';
+        } catch (\Exception $e) {
+            return Result::fail($e->getMessage());
+        }
+    }
+    # 通道二回调
+    public function callbackPay1()
+    {
+        try {
+            $params = request()->all();
+            \Log::info('通道2回调参数', $params);
+            $model = new Pay1Service();
+            $res = $model->callback($params);
+            if ($res) {
+                return 'SUCCESS';
+            }
+            return 'FAIL';
+        } catch (\Exception $e) {
+            return Result::fail($e->getMessage());
+        }
+    }
+
+    # 通道三回调
+    public function callbackPay2()
+    {
+        try {
+            $params = request()->all();
+            \Log::info('通道3回调参数', $params);
+            $model = new Pay2Service();
+            $res = $model->callback($params);
+            if ($res) {
+                return 'OK';
+            }
+            return 'fail';
+        } catch (\Exception $e) {
+            return Result::fail($e->getMessage());
+        }
     }
 }
