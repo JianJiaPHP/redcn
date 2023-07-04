@@ -10,7 +10,7 @@ use App\Models\UserAccount;
 use App\Models\UserAccountBonus;
 use App\Models\Users;
 use App\Models\Withdrawals;
-use App\Services\Api\UserAccountBonusService;
+use App\Services\Admin\Base\ConfigService;
 use App\Services\Api\UserAccountService;
 use App\Utils\Result;
 use DB;
@@ -115,16 +115,37 @@ class IncomeController
         if ($validator->fails()) {
             return Result::fail($validator->errors()->first());
         }
+        # 查询该用户是否被禁止提现
+        $userIs = Users::query()->where('id', $userId)->value('is_withdrawal');
+        if ($userIs == 1) {
+            return Result::fail('您已被禁止提现');
+        }
+        # 查询配置是否开启提现
+        $withdrawConfig = new ConfigService();
+        $withdraw = $withdrawConfig->getAll();
+        # 判断是否开启提现
+        if ($withdraw['withdrawal.is_withdrawal'] == 0) {
+            return Result::fail('提现功能已关闭');
+        }
+        # 判断是否达到最低提现金额
+        if ($withdraw['withdrawal.min'] > $params['amount']) {
+            return Result::fail('提现金额不能小于' . $withdraw['withdrawal.min']);
+        }
         # 查询金额是否足够
         $totalBalance = UserAccount::query()->where('user_id', $userId)->orderByDesc('id')->value('total_balance') ?? 0;
         if ($totalBalance < $params['amount']) {
             return Result::fail('余额不足');
         }
+        # 如果提现手续费大于0则扣除手续费
+        if ($withdraw['withdrawal.fee'] > 0 && $withdraw['withdrawal.fee'] < 1) {
+            $params['amount'] = bcsub($params['amount'] , bcmul($params['amount'],$withdraw['withdrawal.fee'], 2),2);
+        }
         try {
             DB::beginTransaction();
             # 生成提现数据
             $withdrawData = [
-                'user_id'         => $userId,
+                'user_id' => $userId,
+
                 'amount'          => $params['amount'],
                 'card_number'     => $params['card_number'],
                 'cardholder_name' => $params['cardholder_name'],
@@ -139,7 +160,7 @@ class IncomeController
             # 扣除金额
             UserAccountService::userAccount($userId, -$params['amount'], '余额钱包提现', 6);
             DB::commit();
-            return Result::success('提现成功');
+            return Result::success('提现成功,等待管理员审核');
         } catch (\Exception $e) {
             return Result::fail($e->getMessage());
         }
@@ -187,6 +208,7 @@ class IncomeController
             ->get();
         return Result::success($list);
     }
+
     # 余额钱包日收益列表
     public function balanceList(): JsonResponse
     {
@@ -212,7 +234,7 @@ class IncomeController
         $userId = auth('api')->id();
         // 尝试获取锁
         $lockAcquired = Redis::get("bonusReceive" . $userId);
-        if ($lockAcquired){
+        if ($lockAcquired) {
             throw new ApiException("领取失败！请重试");
         }
         Redis::set("goodsReceive" . $userId, 1, 'EX', 10, 'NX');
@@ -252,7 +274,7 @@ class IncomeController
         $userId = auth('api')->id();
         // 尝试获取锁
         $lockAcquired = Redis::get("goodsReceive" . $userId);
-        if ($lockAcquired){
+        if ($lockAcquired) {
             throw new ApiException("领取失败！请重试");
         }
         Redis::set("goodsReceive" . $userId, 1, 'EX', 10, 'NX');

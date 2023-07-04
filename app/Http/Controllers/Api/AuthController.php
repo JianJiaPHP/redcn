@@ -295,7 +295,7 @@ class AuthController extends Controller
         if (!$user) {
             throw new ApiException("账号不存在");
         }
-        if ($user->is_enabled == 2) {
+        if ($user->is_locked == 1) {
             throw new ApiException("账号已被禁用");
         }
         if (!$user->password) {

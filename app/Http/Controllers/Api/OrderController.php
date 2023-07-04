@@ -10,6 +10,8 @@ use App\Models\RechargeLog;
 use App\Models\UserAccount;
 use App\Models\UserGoods;
 use App\Models\UserGoodsLog;
+use App\Models\Users;
+use App\Services\Admin\Base\ConfigService;
 use App\Services\Api\Pay1Service;
 use App\Services\Api\Pay2Service;
 use App\Services\Api\PayService;
@@ -133,7 +135,33 @@ class OrderController
             ]);
             if (!$res) {
                 DB::rollBack();
+                Redis::del("payGoods_" . $userId);
                 throw new ApiException("购买失败");
+            }
+            # 查询配置是否开启提现
+            $Config = new ConfigService();
+            $configList = $Config->getAll();
+            # 查询用户上级
+            $userPid = Users::query()->where('id', $userId)->value('p_id');
+            # 查询用户上级的上级
+            $userPpid = Users::query()->where('id', $userPid)->value('id');
+            if ($userPid&&$userPid>0){
+                # 上级返利
+                $res = UserAccountService::userAccount($userPid, bcmul($amount, $configList['distribution.one'], 2), '一级分销返利', 2);
+                if (!$res) {
+                    DB::rollBack();
+                    Redis::del("payGoods_" . $userId);
+                    throw new ApiException("购买失败");
+                }
+            }
+            if ($userPpid&&$userPid>0){
+                # 上上级返利
+                $res = UserAccountService::userAccount($userPpid, bcmul($amount, $configList['distribution.two'], 2), '二级分销返利', 2);
+                if (!$res) {
+                    DB::rollBack();
+                    Redis::del("payGoods_" . $userId);
+                    throw new ApiException("购买失败");
+                }
             }
             Redis::del("payGoods_" . $userId);
             DB::commit();
@@ -238,6 +266,7 @@ class OrderController
                 'type'        => $params['type'],
                 'recharge_id' => $res['recharge_id']
             ]);
+
             if (!$rs) {
                 Redis::del("payRecharge_" . $userId);
                 throw new ApiException("充值失败");
