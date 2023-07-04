@@ -235,6 +235,7 @@ class OrderController
                 'amount'      => $params['amount'],
                 'zhifu_no'    => $res['tradeNo'],
                 'status'      => 1,
+                'type'        => $params['type'],
                 'recharge_id' => $res['recharge_id']
             ]);
             if (!$rs) {
