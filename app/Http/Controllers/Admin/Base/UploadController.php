@@ -34,7 +34,8 @@ class UploadController extends Controller
             $file = $request->file('file');
             $path = $file->store('uploads'); // 存储文件到 storage/app/uploads 目录下
             return Result::success([
-                'path' => \Storage::url($path)
+                'path' => \Storage::url($path),
+                'app_url' => env('APP_URL')
             ]);
         }
 
