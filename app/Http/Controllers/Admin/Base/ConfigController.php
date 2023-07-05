@@ -27,8 +27,6 @@ class ConfigController extends Controller
     /**
      * 获取配置信息
      * @return JsonResponse
-     * @author Aii
-     * @date 2019/12/13 下午3:22
      */
     public function index(): JsonResponse
     {
@@ -42,8 +40,6 @@ class ConfigController extends Controller
      * 修改配置信息
      * @param $id int 配置id
      * @return JsonResponse
-     * @author Aii
-     * @date 2019/12/13 下午3:24
      */
     public function update(int $id): JsonResponse
     {
@@ -58,7 +54,6 @@ class ConfigController extends Controller
     /**
      * 根据key值获取
      * @return JsonResponse
-     * author Yan
      */
     public function getOne(): JsonResponse
     {
@@ -76,7 +71,6 @@ class ConfigController extends Controller
      * 根据key值获取
      * @param $key
      * @return JsonResponse
-     * author Yan
      */
     public function getAll(): JsonResponse
     {
@@ -86,8 +80,6 @@ class ConfigController extends Controller
     }
 
     /**
-     * User: Yan
-     * DateTime: 2023/4/11
      * @return JsonResponse 获取小程序资质
      * 获取小程序资质
      */

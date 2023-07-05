@@ -18,8 +18,7 @@ class HttpSend
      * @param $url
      * @param $data
      * @return array|bool|mixed
-     * author Yan
-     */
+          */
     public static function post($url, $data)
     {
         try {

@@ -16,8 +16,7 @@ class Config extends Base
      * 根据条件获取
      * @param $where
      * @return array
-     * author Yan
-     */
+          */
     public static function getByWhere($where): array
     {
         return self::query()->whereIn('group', $where)
@@ -29,7 +28,7 @@ class Config extends Base
      * 更新或者添加
      * @param array $params 配置值
      * @param int|null $id 配置ID
-     * @author Yan
+
      */
     public function updateOrCreate(array $params, int $id = null)
     {

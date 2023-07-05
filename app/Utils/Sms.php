@@ -24,8 +24,7 @@ class Sms
      * @param $signName string 签名
      * @param $templateCode string 模版
      * @param $templateParam string 模块变量
-     * author Yan
-     */
+          */
     private static function send($phone, $signName, $templateCode, $templateParam)
     {
         $client = self::createClient();
@@ -42,8 +41,7 @@ class Sms
     /**
      * 使用AK&SK初始化账号Client
      * @return Dysmsapi
-     * author Yan
-     */
+          */
     private static function createClient()
     {
         $smsConfig = \config('aliyun.sms');

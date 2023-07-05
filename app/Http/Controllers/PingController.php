@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Http\Controllers\Admin\Base;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\UserGoods;
 use App\Services\Api\UserAccountService;
 use Carbon\Carbon;

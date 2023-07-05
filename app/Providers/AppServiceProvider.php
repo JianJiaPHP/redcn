@@ -39,16 +39,5 @@ class AppServiceProvider extends ServiceProvider
 //           'timeout'          => 3600, // The timeout for the underlying process
 //           'ffmpeg.threads'   => 12,   // The number of threads that FFMpeg should use
 //       ));
-        $this->app->singleton('ffmpeg', function ($app) {
-            return FFMpeg::create([
-                'ffmpeg.binaries'  => '/www/php_session/ffmpeg-4.3.1/ffmpeg',
-                'ffprobe.binaries' =>  '/www/php_session/ffmpeg-4.3.1/ffprobe'
-            ]);
-        });
-        $this->app->singleton('ffprobe', function ($app) {
-            return FFProbe::create([
-                'ffprobe.binaries' =>  '/www/php_session/ffmpeg-4.3.1/ffprobe'
-            ]);
-        });
     }
 }

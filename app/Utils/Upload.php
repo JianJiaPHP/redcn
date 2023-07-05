@@ -26,8 +26,7 @@ class Upload
      * 创建zip
      * @param $files
      * @param $zipName
-     * author Yan
-     */
+          */
     public static function zip($files, $zipName)
     {
         // 初始化zip
@@ -56,8 +55,7 @@ class Upload
     /**
      * 创建阿里云oss
      * @return OssClient|null
-     * author Yan
-     */
+          */
     private static function createClient(): ?OssClient
     {
         $ossConfig = config('aliyun.oss');
@@ -79,8 +77,7 @@ class Upload
      * @param $type //上传者类型(0=用户 1=管理员)
      * @param $id // 上传者ID
      * @return mixed|string
-     * author Yan
-     */
+          */
     public static function upload(UploadedFile $file, $type, $id)
     {
         // 文件原始名称
@@ -126,8 +123,7 @@ class Upload
      * 删除文件
      * @param string|array $object
      * @return null
-     * author Yan
-     */
+          */
     public static function deleteFile($object)
     {
         $ossClient = self::createClient();

@@ -177,12 +177,7 @@ return [
         App\Providers\RouteServiceProvider::class,
 
         Reliese\Coders\CodersServiceProvider::class,
-        // Google验证器
-        Earnp\GoogleAuthenticator\GoogleAuthenticatorServiceprovider::class,
-        // 二维码生成器
-        SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
-        // 华为OBS
-        Back\LaravelObs\HuaweiObsServiceProvider::class,
+
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         Mews\Captcha\CaptchaServiceProvider::class,
 

@@ -54,6 +54,7 @@ class DayIncome extends Command
             foreach ($arr as $v) {
                 $apiServiceProvider->productIncome($v);
             }
+            return Result::success();
         } catch (\Exception $e) {
             Log::error('每日产品收益开始error' . Carbon::now() . $e->getMessage());
             return Result::fail($e->getMessage());

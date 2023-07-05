@@ -22,15 +22,16 @@ class UserAccountService
             $exits = UserGoodsLog::query()->where(['user_id' => $userId, 'user_goods_id' => $id, 'date' => $toDay])->exists();
             if ($exits) {
                 \Log::error('产品定时收益异常：1');
-                return '';
+                return '1';
             }
             # 添加记录
             $add = UserGoodsLog::query()->create(['user_id' => $userId, 'user_goods_id' => $id, 'income' => $income, 'date' => $toDay]);
             if (!$add) {
                 \Log::error('产品定时收益异常：2');
 
-                return '';
+                return '2';
             }
+
             self::userAccount($userId, $income, '产品定时收益', 2);
             if ($toDay == date('Y-m-d',$params['end_date'])){
                 # 最后一天收益奖励
@@ -45,7 +46,7 @@ class UserAccountService
     # 产品定时收益
 
     /**
-     * User: Yan
+
      * @param int $user_id 用户id
      * @param float $profit 金额 扣钱为负数 加钱为正数
      * @param string $describe 描述

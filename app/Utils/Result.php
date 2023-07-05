@@ -42,8 +42,7 @@ class Result
      * 判断返回
      * @param $data
      * @return JsonResponse
-     * author Yan
-     */
+          */
     public static function choose($data): JsonResponse
     {
         return $data ? self::success($data) : self::fail();
@@ -54,8 +53,7 @@ class Result
      * @param null $data
      * @param string $message
      * @return JsonResponse
-     * author Yan
-     */
+          */
     public static function success($data = null, string $message = 'success'): JsonResponse
     {
         return self::result(self::SUCCESS, $message, $data);
@@ -67,8 +65,7 @@ class Result
      * @param $message
      * @param null $data
      * @return JsonResponse
-     * author Yan
-     */
+          */
     private static function result($code, $message, $data = null): JsonResponse
     {
         return response()->json([
@@ -83,8 +80,7 @@ class Result
      * @param string $message
      * @param null $data
      * @return JsonResponse
-     * author Yan
-     */
+          */
     public static function fail(string $message = 'fail', $data = null)
     {
         return self::result(self::FAIL, $message, $data);
@@ -93,8 +89,7 @@ class Result
     /**
      * 暂未登录或token已经过期
      * @return JsonResponse
-     * author Yan
-     */
+          */
     public static function unauthorized()
     {
         return self::result(self::UNAUTHORIZED, '登录已过期请重新登录');
@@ -103,8 +98,7 @@ class Result
     /**
      * 没有相关权限
      * @return JsonResponse
-     * author Yan
-     */
+          */
     public static function forbidden()
     {
         return self::result(self::FORBIDDEN, "没有相关权限");
@@ -114,8 +108,7 @@ class Result
      * 参数验证失败
      * @param $message
      * @return JsonResponse
-     * author Yan
-     */
+          */
     public static function validateFailed($message)
     {
         return self::result(self::VALIDATE_FAILED, $message);
@@ -124,8 +117,7 @@ class Result
     /**
      * 签名验证失败
      * @return JsonResponse
-     * author Yan
-     */
+          */
     public static function signFailed()
     {
         return self::result(self::SIGN_FAILED, '签名失败');

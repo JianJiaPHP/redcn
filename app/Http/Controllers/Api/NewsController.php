@@ -32,7 +32,7 @@ class NewsController extends Controller
     }
 
     /**
-     * User: Yan
+
      * DateTime: 2023/5/23
      * @return JsonResponse
      * 获取协议内容接口

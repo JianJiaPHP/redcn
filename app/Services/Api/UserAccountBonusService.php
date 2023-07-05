@@ -10,7 +10,7 @@ use Exception;
 class UserAccountBonusService
 {
     /**
-     * User: Yan
+
      * @param int $user_id 用户id
      * @param float $profit 金额 扣钱为负数 加钱为正数
      * @param string $describe 描述

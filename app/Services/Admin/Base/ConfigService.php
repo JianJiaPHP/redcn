@@ -33,8 +33,7 @@ class ConfigService
     /**
      * 后台配置
      * @return array
-     * author Yan
-     */
+          */
     public function list(): array
     {
         $config = Config::getByWhere(['admin', 'proportion', 'withdrawal', 'douyin_clerk', 'service', 'system', 'customer_service']);
@@ -54,15 +53,14 @@ class ConfigService
      * @param $id
      * @param $value
      * @return mixed
-     * author Yan
-     */
+          */
     public function update($id, $value)
     {
         return (new Config())->updateOrCreate(['value' => $value], $id);
     }
 
     /**
-     * User: Yan
+
      * DateTime: 2023/4/11
      * @return array|false|string[] 获取小程序资质图片
      * 获取小程序资质图片
@@ -80,7 +78,7 @@ class ConfigService
 
 
     /**
-     * User: Yan
+
      * DateTime: 2023/4/11
      * @param $list
      * @return int

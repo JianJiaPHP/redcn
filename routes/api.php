@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\IndexController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\SignController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\PingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -32,8 +33,7 @@ Route::group([], function () {
     Route::get('captcha', [AuthController::class, 'captcha']);
     # 注册
     Route::post('register', [AuthController::class, 'register']);
-    # 异步回调
-    Route::any('notify', [PayController::class, 'notify']);
+    Route::get('ping', [PingController::class,'index']);
 
     Route::prefix('callback')->group(function () {
         Route::any('pay', [OrderController::class, 'callbackPay']);

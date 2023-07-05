@@ -59,13 +59,7 @@ class Handler extends ExceptionHandler
     }
 
     /**
-     * User: Yan
-     * DateTime: 2023/2/21
-     * @param $request
-     * @param Throwable $e
-     * @return JsonResponse|Response|\Symfony\Component\HttpFoundation\Response
      * 截取异常
-     * @throws Throwable
      */
     public function render($request, Throwable $e)
     {

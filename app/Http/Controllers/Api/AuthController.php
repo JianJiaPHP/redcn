@@ -125,7 +125,7 @@ class AuthController extends Controller
     }
 
     /**
-     * User: Yan
+
      * DateTime: 2023/5/8
      * @return JsonResponse
      * 账号密码注册
@@ -269,7 +269,7 @@ class AuthController extends Controller
 
     /**
      * 账号密码
-     * User: Yan
+
      * DateTime: 2023/5/8
      * @return JsonResponse
      * @throws ApiException
@@ -331,7 +331,7 @@ class AuthController extends Controller
     }
 
     /**
-     * User: Yan
+
      * DateTime: 2023/5/18
      * @return JsonResponse
      * @throws ApiException
