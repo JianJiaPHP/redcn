@@ -173,6 +173,116 @@ class OrderController
         }
     }
 
+    # 现金购买商品
+
+    /**
+     * @throws ApiException
+     */
+    public function payCashGoods(): JsonResponse
+    {
+        #查询有没有redis锁
+        $userId = auth('api')->id();
+        $lock = Redis::get("payCashGoods_" . $userId);
+        if ($lock) {
+            throw new ApiException("请勿点击太频繁，请稍后再试！");
+        }
+        # 加锁
+        Redis::set("payCashGoods_" . $userId, 1, 'EX', 3, 'NX');
+        $params = request()->all();
+        # 验证器
+        $validator = validator($params, [
+            'goods_id' => 'required',
+            'number'   => 'required',
+            'recharge_id' => 'required',
+            # 金额 最多2位小数 不能为负数
+            'amount'      => 'required|numeric|regex:/^[0-9]+(.[0-9]{1,2})?$/',
+            'type'        => 'required|in:1,2'
+        ], [
+            'goods_id.required' => '商品ID不能为空',
+            'number.required'   => '购买数量不能为空',
+            'recharge_id.required' => '充值渠道ID不能为空',
+            'type.required'        => '类型不能为空',
+            'type.in'              => '类型错误',
+        ]);
+        if ($validator->fails()) {
+            return Result::fail($validator->errors()->first());
+        }
+        try {
+            DB::beginTransaction();
+            # 查询充值渠道
+            $rechargeGo = Recharge::query()->where('id', $params['recharge_id'])->value('go');
+            # 生成订单号
+            $order_no = $this->createOrderNo();
+
+            switch ($rechargeGo) {
+                case 1:
+                    $serve = new PayService();
+                    try {
+                        $res = $serve->orderCreate($params['amount'], $order_no, $params['type']);
+                    } catch (GuzzleException $e) {
+                        Redis::del("payCashGoods_" . $userId);
+                        throw new ApiException($e->getMessage());
+                    }
+                    break;
+                case 2:
+                    $serve = new Pay1Service();
+                    try {
+                        $res = $serve->orderCreate($params['amount'], $order_no, $params['type']);
+                    } catch (GuzzleException $e) {
+                        Redis::del("payCashGoods_" . $userId);
+                        throw new ApiException($e->getMessage());
+                    }
+                    break;
+                case 3:
+                    $serve = new Pay2Service();
+                    try {
+                        $res = $serve->orderCreate($params['amount'], $order_no, $params['type']);
+                    } catch (GuzzleException $e) {
+                        Redis::del("payCashGoods_" . $userId);
+                        throw new ApiException($e->getMessage());
+                    }
+                    break;
+                default:
+                    Redis::del("payCashGoods_" . $userId);
+                    throw new ApiException("充值渠道不存在");
+            }
+            if (empty($res)) {
+                Redis::del("payCashGoods_" . $userId);
+                throw new ApiException("充值失败");
+            }
+            # 查询商品单价
+            $goodsInfo = Goods::query()->where('id', $params['goods_id'])->first();
+            # 计算总价
+            $amount = bcmul($goodsInfo['amount'], $params['number'], 2);
+            # 创建支付订单
+            $rs = RechargeLog::query()->create([
+                'user_id'     => $userId,
+                'order_no'    => $order_no,
+                'amount'      => $amount,
+                'zhifu_no'    => $res['tradeNo'],
+                'status'      => 1,
+                'type'        => $params['type'],
+                'recharge_id' => $res['recharge_id'],
+                'pay_type'    =>2,
+                'goods_id'    => $params['goods_id'],
+                'number'    => $params['number'],
+            ]);
+
+            if (!$rs) {
+                Redis::del("payCashGoods_" . $userId);
+                throw new ApiException("充值失败");
+            }
+            Redis::del("payCashGoods_" . $userId);
+            DB::commit();
+            return Result::success($res);
+        } catch (\Exception $e) {
+            # 删除锁
+            Redis::del("payCashGoods_" . $userId);
+            return Result::fail($e->getMessage());
+        }
+    }
+
+
     # 充值渠道
     public function payChannel(): JsonResponse
     {
@@ -352,6 +462,9 @@ class OrderController
                         ->where('zhifu_no', $params['order_no'])
                         ->where('user_id', $userId)
                         ->update(['status' => 2]);
+                    if ($orderInfo['pay_type'] == 2){
+                        $this->okGoods($orderInfo);
+                    }
                     return Result::success(2);
                 }
             }
@@ -361,7 +474,66 @@ class OrderController
         }
 
     }
+    # 购买成功回调
 
+    /**
+     * @throws ApiException
+     */
+    public function okGoods($orderInfo)
+    {
+        if(empty($orderInfo)){
+            return false;
+        }
+        try {
+            DB::beginTransaction();
+            $goodsInfo = Goods::query()->where('id', $orderInfo['goods_id'])->first();
+            # 增加用户产品信息
+            $res = UserGoods::query()->create([
+                'user_id'      => $orderInfo['user_id'],
+                'goods_id'     => $orderInfo['goods_id'],
+                'status'       => 1,
+                'type'         => $goodsInfo['type'],
+                'name'         => $goodsInfo['name'],
+                'amount'       => $orderInfo['amount'],
+                'introduce'    => $goodsInfo['introduce'],
+                'income'       => bcmul($goodsInfo['income'], $orderInfo['number'], 2),
+                'validity_day' => $goodsInfo['validity_day'],
+                'end_rewards'  => bcmul($goodsInfo['end_rewards'], $orderInfo['number'], 2),
+                'start_date'   => Carbon::now()->toDateTimeString(),
+                'end_date'     => Carbon::now()->addDays($goodsInfo['validity_day'])->toDateTimeString(),
+            ]);
+            if (!$res) {
+                DB::rollBack();
+                throw new ApiException("购买失败");
+            }
+            # 查询配置是否开启提现
+            $Config = new ConfigService();
+            $configList = $Config->getAll();
+            # 查询用户上级
+            $userPid = Users::query()->where('id', $orderInfo['user_id'])->value('p_id');
+            # 查询用户上级的上级
+            $userPpid = Users::query()->where('id', $userPid)->value('id');
+            if ($userPid&&$userPid>0){
+                # 上级返利
+                $res = UserAccountService::userAccount($userPid, bcmul($orderInfo['amount'], $configList['distribution.one'], 2), '一级分销返利', 2);
+                if (!$res) {
+                    DB::rollBack();
+                    throw new ApiException("购买失败");
+                }
+            }
+            if ($userPpid&&$userPid>0){
+                # 上上级返利
+                $res = UserAccountService::userAccount($userPpid, bcmul($orderInfo['amount'], $configList['distribution.two'], 2), '二级分销返利', 2);
+                if (!$res) {
+                    DB::rollBack();
+                    throw new ApiException("购买失败");
+                }
+            }
+        }catch (\Exception $e){
+            DB::rollBack();
+            throw new ApiException($e->getMessage());
+        }
+    }
 
     # 通道1回调
     public function callbackPay()

@@ -3,6 +3,7 @@
 namespace App\Services\Api;
 
 use App\Exceptions\ApiException;
+use App\Http\Controllers\Api\OrderController;
 use App\Models\RechargeLog;
 use DB;
 use Exception;
@@ -153,11 +154,20 @@ class Pay1Service
                     DB::rollBack();
                     throw new Exception('更新失败');
                 }
-                # 增加用户余额
-                $runM = UserAccountService::userAccount($resLog->user_id, $resLog->amount, '充值', 7);
-                if (!$runM){
-                    DB::rollBack();
-                    throw new Exception('更新失败');
+                if ($resLog['pay_type'] == 2){
+                    $new = new OrderController();
+                    $is = $new->okGoods($resLog);
+                    if (!$is){
+                        DB::rollBack();
+                        throw new Exception('更新失败');
+                    }
+                }else{
+                    # 增加用户余额
+                    $runM = UserAccountService::userAccount($resLog->user_id, $resLog->amount, '充值', 7);
+                    if (!$runM){
+                        DB::rollBack();
+                        throw new Exception('更新失败');
+                    }
                 }
                 DB::commit();
                 return true;

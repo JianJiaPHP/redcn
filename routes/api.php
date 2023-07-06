@@ -144,6 +144,8 @@ Route::middleware(['api.user'])->group(function () {
     Route::prefix('order')->group(function () {
         # 购买商品统一下单
         Route::post('payGoods', [OrderController::class, 'payGoods']);
+        # 购买商品渠道支付下单
+        Route::post('payCashGoods', [OrderController::class, 'payCashGoods']);
         # 充值渠道列表
         Route::get('payChannel', [OrderController::class, 'payChannel']);
         # 充值统一下单
