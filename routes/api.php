@@ -44,6 +44,8 @@ Route::group([], function () {
 });
 # 需要身份验证    需要登录
 Route::middleware(['api.user'])->group(function () {
+    # 获取富文本接口【官方群聊，签到说明】
+    Route::get('getRichText', [ConfigController::class, 'getRichText']);
     # 首页资料
     Route::get('index', [IndexController::class, 'index']);
     # 赠送金额页面数据

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Base;
 
 
 use App\Http\Controllers\Controller;
+use App\Models\NewD;
 use App\Services\Admin\Base\ConfigService;
 use App\Utils\Result;
 use Illuminate\Http\JsonResponse;
@@ -110,4 +111,22 @@ class ConfigController extends Controller
         return Result::success($data);
     }
 
+    # 获取富文本数据
+    public function getRichText():JsonResponse
+    {
+        $params = request()->all();
+        # 验证器
+        $validator = Validator::make($params, [
+            # key 必传
+            'key' => 'required',
+        ], [
+            'key.required' => 'key不能为空',
+        ]);
+        # 验证失败
+        if ($validator->fails()) {
+            return Result::fail($validator->errors()->first());
+        }
+        $value = NewD::query()->where('key_name',$params['key'])->value('content_text');
+        return Result::success($value);
+    }
 }
