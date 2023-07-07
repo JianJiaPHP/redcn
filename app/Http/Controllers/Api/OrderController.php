@@ -287,6 +287,22 @@ class OrderController
     public function payChannel(): JsonResponse
     {
         $data = Recharge::query()->where('is_open', 1)->select(['id', 'name','is_wechat','is_ali'])->get();
+        foreach ($data as &$v){
+            $list = [];
+            if ($v['is_wechat'] == 1){
+                $list[] = [
+                    'value' => 1,
+                    'name' => '微信支付'
+                ];
+            }
+            if ($v['is_ali'] == 1){
+                $list[] = [
+                    'value' => 2,
+                    'name' => '支付宝支付'
+                ];
+            }
+            $v['payList'] = $list;
+        }
         return Result::success($data);
     }
 
