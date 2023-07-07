@@ -286,7 +286,7 @@ class OrderController
     # 充值渠道
     public function payChannel(): JsonResponse
     {
-        $data = Recharge::query()->where('is_open', 1)->select(['id', 'name'])->get();
+        $data = Recharge::query()->where('is_open', 1)->select(['id', 'name','is_wechat','is_ali'])->get();
         return Result::success($data);
     }
 

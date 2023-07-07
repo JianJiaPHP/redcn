@@ -64,7 +64,6 @@ class WsResult
      * @param $code
      * @param $message
      * @param null $data
-     * @return string author Yan
           */
     private static function result($code, $message, $data = null): string
     {
