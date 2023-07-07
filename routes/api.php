@@ -31,6 +31,10 @@ Route::group([], function () {
     Route::post('login', [AuthController::class, 'login']);
     # 图形验证码
     Route::get('captcha', [AuthController::class, 'captcha']);
+    # 修改密码
+    Route::post('changePassword', [AuthController::class, 'changePassword']);
+    # 获取公告
+    Route::get('getOne', [ConfigController::class, 'getOne']);
     # 注册
     Route::post('register', [AuthController::class, 'register']);
     Route::get('ping', [PingController::class,'index']);
@@ -56,8 +60,7 @@ Route::middleware(['api.user'])->group(function () {
     Route::get('query/results', [PayController::class, 'queryResults']);
     # 验证交易密码是否正确
     Route::post('checkPayPassword', [AuthController::class, 'checkPayPassword']);
-    # 修改密码
-    Route::post('changePassword', [AuthController::class, 'changePassword']);
+
     # 修改交易密码
     Route::post('changePayPassword', [AuthController::class, 'changePayPassword']);
     # 上传文件
@@ -70,8 +73,7 @@ Route::middleware(['api.user'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     # 获取配置
     Route::get('getConfig', [ConfigController::class, 'getAll']);
-    # 获取公告
-    Route::get('getOne', [ConfigController::class, 'getOne']);
+
     # 余额提现页数据
     Route::get('withdrawData', [IncomeController::class, 'withdrawData']);
     # 余额提现明细

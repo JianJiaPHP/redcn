@@ -31,6 +31,7 @@ class SignController extends Controller
 
         # 查询当月记录
         $month = SignLog::query()
+            ->where('user_id',$userId)
             ->whereMonth('created_at', '=', date('m'))
             ->whereYear('created_at', '=', date('Y'))
             ->pluck('created_at');
@@ -54,7 +55,8 @@ class SignController extends Controller
                 'userRedFlagSum'  => $userRedFlagSum,# 拥有红旗数量
                 'redFlagValue'    => $redFlagValue,# 红旗价值
                 'monthSign'      => $month,# 当月签到日期
-                'isSignIn'      => $isSignIn# 当日是否签到
+                'isSignIn'      => $isSignIn,# 当日是否签到
+                'user_id'=>$userId
             ]
         );
     }
