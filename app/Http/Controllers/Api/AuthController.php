@@ -252,7 +252,7 @@ class AuthController extends Controller
 
     public function createInvitation()
     {
-        #6位随机字符串邀请码
+        #6位随机数字
         $invitation = $this->str_random(6);
         $user = Users::query()->where('invitation', $invitation)->first();
         if ($user) {
@@ -263,7 +263,7 @@ class AuthController extends Controller
 
     public function str_random($length = 6)
     {
-        $pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $pool = '0123456789';
         return substr(str_shuffle(str_repeat($pool, $length)), 0, $length);
     }
 
