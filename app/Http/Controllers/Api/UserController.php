@@ -23,11 +23,12 @@ class UserController extends Controller
         $totalPid = count($userPid);
         # 总收益
         $totalIncome = Users::getMySubordinateTotalIncome($user['id']);
-
+        # $totalIncome 如果是负数转正数
         return Result::success(
             [
                 'totalPid'    => $totalPid,#下级总数
-                'totalIncome' => $totalIncome,#总收益
+                # 转正数
+                'totalIncome' => $totalIncome,# 总收益
             ]
         );
     }

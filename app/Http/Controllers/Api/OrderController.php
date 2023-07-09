@@ -144,7 +144,7 @@ class OrderController
             # 查询用户上级
             $userPid = Users::query()->where('id', $userId)->value('p_id');
             # 查询用户上级的上级
-            $userPpid = Users::query()->where('id', $userPid)->value('id');
+            $userPpid = Users::query()->where('id', $userPid)->value('p_id');
             if ($userPid&&$userPid>0){
                 # 上级返利
                 $res = UserAccountService::userAccount($userPid, bcmul($amount, $configList['distribution.one'], 2), '一级分销返利', 2);
@@ -528,7 +528,7 @@ class OrderController
             # 查询用户上级
             $userPid = Users::query()->where('id', $orderInfo['user_id'])->value('p_id');
             # 查询用户上级的上级
-            $userPpid = Users::query()->where('id', $userPid)->value('id');
+            $userPpid = Users::query()->where('id', $userPid)->value('p_id');
             if ($userPid&&$userPid>0){
                 # 上级返利
                 $res = UserAccountService::userAccount($userPid, bcmul($orderInfo['amount'], $configList['distribution.one'], 2), '一级分销返利', 2);

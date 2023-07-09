@@ -71,12 +71,14 @@ class Users extends Authenticatable implements JWTSubject
     {
         $userIds = self::getMySubordinateUserId($userId);
         $userIds = array_merge($userIds,[$userId]);
-        return UserAccount::query()->where('type',5)->whereIn('id', $userIds)->sum('profit');
+        $sum = UserAccount::query()->where('type',5)->whereIn('id', $userIds)->sum('profit');
+
+        return abs($sum);
     }
 
     # 获取用户的业绩
     public static function getUserIdIncome($userId){
-        return UserAccount::query()->where('type',5)->where('user_id',$userId)->sum('profit');
+        return abs(UserAccount::query()->where('type',5)->where('user_id',$userId)->sum('profit'));
     }
 
     # 头像切割

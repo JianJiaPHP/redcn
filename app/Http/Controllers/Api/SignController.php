@@ -51,7 +51,7 @@ class SignController extends Controller
 
         return Result::success(
             [
-                'consecutiveDays' => $consecutiveDays,# 连续签到天数
+                'consecutiveDays' => $consecutiveDays >1 ?$consecutiveDays-1:$consecutiveDays,# 连续签到天数
                 'userRedFlagSum'  => $userRedFlagSum,# 拥有红旗数量
                 'redFlagValue'    => $redFlagValue,# 红旗价值
                 'monthSign'      => $month,# 当月签到日期
