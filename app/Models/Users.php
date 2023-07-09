@@ -71,8 +71,7 @@ class Users extends Authenticatable implements JWTSubject
     {
         $userIds = self::getMySubordinateUserId($userId);
         $userIds = array_merge($userIds,[$userId]);
-        $sum = UserAccount::query()->where('type',5)->whereIn('id', $userIds)->sum('profit');
-
+        $sum = UserAccount::query()->where('type',5)->whereIn('user_id', $userIds)->sum('profit');
         return abs($sum);
     }
 
