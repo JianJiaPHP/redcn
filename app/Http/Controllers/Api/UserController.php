@@ -9,6 +9,7 @@ use App\Models\UserInfo;
 use App\Models\Users;
 use App\Utils\Result;
 use Illuminate\Http\JsonResponse;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class UserController extends Controller
 {
@@ -244,5 +245,14 @@ class UserController extends Controller
             $this->getWithdrawalNo();
         }
         return $withdrawalNo;
+    }
+
+    # 获取邀请二维码
+    public function share(){
+        $userId = auth('api')->id();
+        $code = Users::query()->where('id',$userId)->value('invitation');
+        $img =  QrCode::format('png')->size(200)->generate(env('H5_URL').'#/pages/login/register?invitation='.$code);    //format 是指定生成文件格式  默认格式是svg,可以直接在浏览器打开，png不能直接显示
+        return Result::success('data:image/png;base64,' . base64_encode($img ));
+
     }
 }

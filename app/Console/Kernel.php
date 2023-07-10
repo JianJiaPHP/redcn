@@ -26,7 +26,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         # 每天00:05执行
-        $schedule->command('command:DayIncome')->dailyAt('00:05');
+        $schedule->command('command:DayIncome')->dailyAt('00:00');
     }
 
     /**
