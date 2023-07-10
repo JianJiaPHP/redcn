@@ -54,7 +54,7 @@ class Result
      * @param string $message
      * @return JsonResponse
           */
-    public static function success($data = null, string $message = 'success'): JsonResponse
+    public static function success($data = '成功', string $message = 'success'): JsonResponse
     {
         return self::result(self::SUCCESS, $message, $data);
     }

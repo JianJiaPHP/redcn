@@ -239,31 +239,34 @@ class IncomeController
         }
         Redis::set("goodsReceive" . $userId, 1, 'EX', 10, 'NX');
         # 查询上级邀请人邀请了多少人了 根据邀请条件给予奖励
-        $count = Users::query()->where('p_id', $userId)->pluck('id');
+        $count = Users::query()->where('p_id', $userId)->where('is_re',0)->pluck('id');
         # 查询购买产品记录
-        $payCount = UserAccount::query()->where('type',5)->whereIn('user_id',$count)->groupBy('user_id')->count();
+        $payCountPid = UserAccount::query()->where('type',5)->whereIn('user_id',$count)->groupBy('user_id')->pluck('user_id');
+        $payCount = count($payCountPid);
         # 查询user领取到了第几阶段
-        $bJie = Users::query()->where('id', $userId)->value('b_jie');
-        $bJie = $bJie + 1;
+//        $bJie = Users::query()->where('id', $userId)->value('b_jie');
+//        $bJie = $bJie + 1;
         # 查询邀请奖励配置
-        $accumulateConfig = AccumulateConfig::query()->where('type', 2)->where('jieduan', $bJie)->first();
-
-        if ($accumulateConfig) {
-            if ($accumulateConfig['num'] <= $payCount) {
-                # 领取奖励
-                try {
-                    UserAccountService::userAccount($userId, $accumulateConfig['value'], '邀请有效新用户累计达到' . $accumulateConfig['num'] . '人奖励', 4);
-                } catch (ApiException $e) {
-                    return Result::fail($e->getMessage());
+        $accumulateConfigNum = AccumulateConfig::query()->where('type', 2)->pluck('num');
+        if ($accumulateConfigNum) {
+            foreach ($accumulateConfigNum as $key => $value) {
+                if ($payCount >= $value && $payCount < $accumulateConfigNum[$key+1]) {
+                    # 领取奖励
+                    try {
+                        $valueSum = (float)AccumulateConfig::query()->where('type', 2)->where('num',$value)->value('value')??0;
+                        UserAccountService::userAccount($userId, $valueSum, '邀请有效新用户累计达到' . $value . '人奖励', 4);
+                    } catch (ApiException $e) {
+                        return Result::fail($e->getMessage());
+                    }
+                    # 更新user表
+                    Users::query()->whereIn('id', $payCountPid)->update(['is_re' => 1]);
+                    # 删除锁
+                    Redis::del("bonusReceive" . $userId);
+                    return Result::success('邀请有效新用户累计达到' . $value . '人奖励'.'领取成功');
                 }
-                # 更新user表
-                Users::query()->where('id', $userId)->update(['b_jie' => $bJie]);
-                # 删除锁
-                Redis::del("bonusReceive" . $userId);
-                return Result::success('邀请有效新用户累计达到' . $accumulateConfig['num'] . '人奖励'.'领取成功');
             }
             Redis::del("bonusReceive" . $userId);
-            return Result::fail('邀请有效新用户累计达到' . $accumulateConfig['num'] . '人奖励'.'未达到领取条件');
+            return Result::fail('未达到领取条件'.'，当前有效邀请人数为'.$payCount.'人');
         }
         Redis::del("bonusReceive" . $userId);
         return Result::fail('未达到领取条件');
@@ -293,17 +296,17 @@ class IncomeController
         $aJie = Users::query()->where('id', $userId)->value('a_jie');
         $aJie = $aJie + 1;
         # 查询邀请奖励配置
-        $accumulateConfig = AccumulateConfig::query()->where('type', 2)->where('jieduan', $aJie)->first();
+        $accumulateConfig = AccumulateConfig::query()->where('type', 1)->where('jieduan', $aJie)->first();
         if ($accumulateConfig) {
             if ($accumulateConfig['num'] <= $total) {
                 # 领取奖励
                 try {
-                    UserAccountService::userAccount($userId, $accumulateConfig['value'], '业绩累计达到' . $accumulateConfig['num'] . '奖励', 3);
+                    UserAccountService::userAccount($userId, bcmul($accumulateConfig['num'],$accumulateConfig['value'],2), '业绩累计达到' . $accumulateConfig['num'] . '奖励', 3);
                 } catch (ApiException $e) {
                     return Result::fail($e->getMessage());
                 }
                 # 更新user表
-                Users::query()->where('id', $userId)->update(['aJie' => $aJie]);
+                Users::query()->where('id', $userId)->update(['a_Jie' => $aJie]);
                 # 删除锁
                 Redis::del("goodsReceive" . $userId);
                 return Result::success('领取成功');
