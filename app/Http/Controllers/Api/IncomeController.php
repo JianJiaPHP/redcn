@@ -245,6 +245,7 @@ class IncomeController
         $bJie = $bJie + 1;
         # 查询邀请奖励配置
         $accumulateConfig = AccumulateConfig::query()->where('type', 2)->where('jieduan', $bJie)->first();
+
         if ($accumulateConfig) {
             if ($accumulateConfig['num'] <= $count) {
                 # 领取奖励
@@ -257,8 +258,10 @@ class IncomeController
                 Users::query()->where('id', $userId)->update(['b_jie' => $bJie]);
                 # 删除锁
                 Redis::del("bonusReceive" . $userId);
-                return Result::success('领取成功');
+                return Result::success('邀请新用户累计达到' . $accumulateConfig['num'] . '人奖励'.'领取成功');
             }
+            Redis::del("bonusReceive" . $userId);
+            return Result::fail('邀请新用户累计达到' . $accumulateConfig['num'] . '人奖励'.'未达到领取条件');
         }
         Redis::del("bonusReceive" . $userId);
         return Result::fail('未达到领取条件');
@@ -282,7 +285,8 @@ class IncomeController
         # 查询上级邀请人邀请了多少人了 根据邀请条件给予奖励
         $count = Users::query()->where('p_id', $userId)->pluck('id');
         # 查询我的下级 购买产品的金额
-        $total = PayOrder::query()->whereIn('user_id', $count)->where('pay_status', 3)->sum('total_amount');
+//        $total = PayOrder::query()->whereIn('user_id', $count)->where('pay_status', 3)->sum('total_amount');
+        $total = Users::getMySubordinateTotalIncome($userId);
         # 查询user领取到了第几阶段
         $aJie = Users::query()->where('id', $userId)->value('a_jie');
         $aJie = $aJie + 1;
@@ -302,6 +306,9 @@ class IncomeController
                 Redis::del("goodsReceive" . $userId);
                 return Result::success('领取成功');
             }
+            # 删除锁
+            Redis::del("goodsReceive" . $userId);
+            return Result::fail('业绩累计达到' . $accumulateConfig['num'] .'未达到领取条件');
         }
         # 删除锁
         Redis::del("goodsReceive" . $userId);
