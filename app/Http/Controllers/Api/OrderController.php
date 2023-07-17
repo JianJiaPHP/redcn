@@ -585,7 +585,6 @@ class OrderController
     {
         try {
             $params = request()->all();
-            dd($params);
             \Log::info('通道3回调参数', $params);
             $model = new Pay2Service();
             $res = $model->callback($params);

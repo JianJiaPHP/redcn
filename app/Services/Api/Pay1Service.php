@@ -24,6 +24,9 @@ class Pay1Service
         try {
             $url = "https://anyipayih52ioq8d.zzbbm.xyz/api/pay/unifiedorder";
             switch ($type) {
+                case 1:
+                    $productId = '203';
+                    break;
                 case 2:
                     $productId = '101';
                     break;
@@ -36,7 +39,7 @@ class Pay1Service
                 'wayCode'    => $productId,//产品ID
                 'subject'    => '充值',
                 'outTradeNo' => $order_no,//商户订单号
-                'amount'     => 10000,//支付金额
+                'amount'     => $amount,//支付金额
                 'extParam'   => $order_no,//支付金额
                 'notifyUrl'  => env('APP_URL') . '/api/callback/pay1',//支付结果后台回调URL
                 'returnUrl'  => env('APP_URL') . '/api/callback/pay1',//支付结果后台回调URL

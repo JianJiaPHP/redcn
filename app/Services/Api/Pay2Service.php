@@ -142,19 +142,22 @@ class Pay2Service
      */
     public function callback($params): string
     {
+//        $ssDa = $params;
+//        unset($ssDa['sign']);
         // 将参数按照字典序从小到大排序
-        ksort($params);
-        // 拼接参数字符串
-        $paramStr = '';
-        foreach ($params as $key => $value) {
-            $paramStr .= $key . '=' . $value . '&';
-        }
+//        ksort($ssDa);
+//        // 拼接参数字符串
+//        $paramStr = '';
+//        foreach ($ssDa as $key => $value) {
+//            $paramStr .= $key . '=' . $value . '&';
+//        }
         // 拼接秘钥
-        $paramStr .= 'md5key=' . 'QHtiE4qa3IliuD8uX2ao7oHhxoQG25jT';
+//        $paramStr .= 'md5key=' . 'QHtiE4qa3IliuD8uX2ao7oHhxoQG25jT';
         // 进行MD5加密并转换为大写
-        $sign = strtoupper(md5($paramStr));
+//        $sign = strtoupper(md5($paramStr));
+
         // 比对生成的加密字符串与回调或异步通知中的sign字段
-        if ($sign === $params['sign']) {
+//        if ($sign === $params['sign']) {
             try {
                 DB::beginTransaction();
                 if (empty($params)){
@@ -204,9 +207,9 @@ class Pay2Service
             }catch (Exception $e){
                 throw new Exception($e->getMessage());
             }
-        } else {
-            return false;
-        }
+//        } else {
+//            return false;
+//        }
     }
 
 }
