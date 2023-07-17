@@ -49,6 +49,8 @@ class DayIncome extends Command
         try {
             # 查询所有在使用的产品
             $arr = UserGoods::query()->where('status', 1)
+                # 大于或者等于开始时间
+                ->where('start_date','<=',Carbon::now())
                 ->where('end_date', '>=', Carbon::now())
                 ->select(['id', 'user_id', 'income','end_rewards','end_date'])->get();
             foreach ($arr as $v) {

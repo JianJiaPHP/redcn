@@ -18,11 +18,12 @@ class IndexController
         # 获取当前页面的地址 不包括路由
         $url = env('APP_URL');
         # 首页视频
-        $video = [$url . "/video/index.mp4", $url . "/video/video2.mp4", $url . "/video/video3.mp4"];
+//        $video = [$url . "/video/index.mp4", $url . "/video/video2.mp4", $url . "/video/video3.mp4"];
         #$video 随机去取一个
-        $videoUrl = $video[array_rand($video)];
-        $officialNews = NewD::query()->where('key_name', 'guanfang')->select(['name', 'content_text'])->first();
-        $povertyAlleviation = NewD::query()->where('key_name', 'fupin')->select(['name', 'content_text'])->first();
+//        $videoUrl = $video[array_rand($video)];
+        $videoUrl =  $url . "/video/video3.mp4";
+        $officialNews = NewD::query()->where('key_name', 'guanfang')->select(['name'])->first();
+        $povertyAlleviation = NewD::query()->where('key_name', 'fupin')->select(['name'])->first();
         return Result::success([
             'videoUrl'           => $videoUrl,
             'officialNews'       => $officialNews,

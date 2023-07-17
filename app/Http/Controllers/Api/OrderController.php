@@ -130,7 +130,7 @@ class OrderController
                 'income'       => bcmul($goodsInfo['income'], $params['number'], 2),
                 'validity_day' => $goodsInfo['validity_day'],
                 'end_rewards'  => bcmul($goodsInfo['end_rewards'], $params['number'], 2),
-                'start_date'   => Carbon::now()->toDateTimeString(),
+                'start_date'   => Carbon::tomorrow()->toDateTimeString(),
                 'end_date'     => Carbon::now()->addDays($goodsInfo['validity_day'])->toDateTimeString(),
             ]);
             if (!$res) {
@@ -213,7 +213,6 @@ class OrderController
             $rechargeGo = Recharge::query()->where('id', $params['recharge_id'])->value('go');
             # 生成订单号
             $order_no = $this->createOrderNo();
-
             switch ($rechargeGo) {
                 case 1:
                     $serve = new PayService();
@@ -514,7 +513,7 @@ class OrderController
                 'income'       => bcmul($goodsInfo['income'], $orderInfo['number'], 2),
                 'validity_day' => $goodsInfo['validity_day'],
                 'end_rewards'  => bcmul($goodsInfo['end_rewards'], $orderInfo['number'], 2),
-                'start_date'   => Carbon::now()->toDateTimeString(),
+                'start_date'   => Carbon::tomorrow()->toDateTimeString(),
                 'end_date'     => Carbon::now()->addDays($goodsInfo['validity_day'])->toDateTimeString(),
             ]);
             if (!$res) {

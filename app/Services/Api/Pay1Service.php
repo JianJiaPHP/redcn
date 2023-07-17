@@ -39,7 +39,7 @@ class Pay1Service
                 'wayCode'    => $productId,//产品ID
                 'subject'    => '充值',
                 'outTradeNo' => $order_no,//商户订单号
-                'amount'     => $amount,//支付金额
+                'amount'     => bcmul($amount,100),//支付金额
                 'extParam'   => $order_no,//支付金额
                 'notifyUrl'  => env('APP_URL') . '/api/callback/pay1',//支付结果后台回调URL
                 'returnUrl'  => env('APP_URL') . '/api/callback/pay1',//支付结果后台回调URL
@@ -59,7 +59,7 @@ class Pay1Service
             ]);
             $response = $client->request('POST', $url, $paramsArr);
             $result = json_decode($response->getBody()->getContents(), true);
-            if ($result['code'] !== '0') {
+            if ($result['code'] !== 0) {
                 throw new ApiException('充值失败，请重试，或者更换渠道');
             }
             return ['payUrl' => $result['data']['payUrl'], 'tradeNo' => $result['data']['tradeNo'], 'recharge_id' => 2];
