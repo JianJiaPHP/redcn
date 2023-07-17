@@ -40,8 +40,8 @@ class Pay2Service
                 'pay_orderid'     => $order_no,//商户订单号
                 'pay_amount'      => $amount,//支付金额
 //                'notifyUrl'    => env('APP_URL') . '/api/notify',//支付结果后台回调URL
-                'pay_notifyurl'   => '/api/callback/pay2',//支付结果后台回调URL
-                'pay_callbackurl' => '/api/callback/pay2',//支付结果后台回调URL
+                'pay_notifyurl'   => env('APP_URL') . '/api/callback/pay2',//支付结果后台回调URL
+                'pay_callbackurl' => env('APP_URL') . '/api/callback/pay2',//支付结果后台回调URL
             ];
             $key = 'QHtiE4qa3IliuD8uX2ao7oHhxoQG25jT';
             $sendData['pay_md5sign'] = $this->generateSign($sendData, $key);

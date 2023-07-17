@@ -199,6 +199,9 @@ class AuthController extends Controller
         if (!empty($params['invitation'])) {
             $invitation = Users::query()->where('invitation', $params['invitation'])->value('id') ?? 0;
         }
+        if ($invitation == 0){
+            throw new ApiException("邀请码不存在");
+        }
         try {
             $password = $params['password'] ?? null;
             $password = $password ? Hash::make(md5($params['password'])) : $password;

@@ -501,7 +501,6 @@ class OrderController
             return false;
         }
         try {
-            DB::beginTransaction();
             $goodsInfo = Goods::query()->where('id', $orderInfo['goods_id'])->first();
             # 增加用户产品信息
             $res = UserGoods::query()->create([
@@ -519,7 +518,6 @@ class OrderController
                 'end_date'     => Carbon::now()->addDays($goodsInfo['validity_day'])->toDateTimeString(),
             ]);
             if (!$res) {
-                DB::rollBack();
                 throw new ApiException("购买失败");
             }
             # 查询配置是否开启提现
@@ -533,7 +531,6 @@ class OrderController
                 # 上级返利
                 $res = UserAccountService::userAccount($userPid, bcmul($orderInfo['amount'], $configList['distribution.one'], 2), '一级分销返利', 2);
                 if (!$res) {
-                    DB::rollBack();
                     throw new ApiException("购买失败");
                 }
             }
@@ -541,12 +538,11 @@ class OrderController
                 # 上上级返利
                 $res = UserAccountService::userAccount($userPpid, bcmul($orderInfo['amount'], $configList['distribution.two'], 2), '二级分销返利', 2);
                 if (!$res) {
-                    DB::rollBack();
                     throw new ApiException("购买失败");
                 }
             }
+            return true;
         }catch (\Exception $e){
-            DB::rollBack();
             throw new ApiException($e->getMessage());
         }
     }
@@ -589,6 +585,7 @@ class OrderController
     {
         try {
             $params = request()->all();
+            dd($params);
             \Log::info('通道3回调参数', $params);
             $model = new Pay2Service();
             $res = $model->callback($params);
