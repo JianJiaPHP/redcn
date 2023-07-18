@@ -130,7 +130,7 @@ class OrderController
                 'income'       => bcmul($goodsInfo['income'], $params['number'], 2),
                 'validity_day' => $goodsInfo['validity_day'],
                 'end_rewards'  => bcmul($goodsInfo['end_rewards'], $params['number'], 2),
-                'start_date'   => Carbon::tomorrow()->toDateTimeString(),
+                'start_date'   => Carbon::now()->addDays(2)->startOfDay()->toDateTimeString(),
                 'end_date'     => Carbon::now()->addDays($goodsInfo['validity_day'])->toDateTimeString(),
             ]);
             if (!$res) {
