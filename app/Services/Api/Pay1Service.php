@@ -59,7 +59,6 @@ class Pay1Service
             ]);
             $response = $client->request('POST', $url, $paramsArr);
             $result = json_decode($response->getBody()->getContents(), true);
-            dd($result);
             if ($result['code'] !== 0) {
                 throw new ApiException('充值失败，请重试，或者更换渠道');
             }

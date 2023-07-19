@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 # 订单管理
 use App\Exceptions\ApiException;
 use App\Models\Goods;
+use App\Models\PayOrder;
 use App\Models\Recharge;
 use App\Models\RechargeLog;
 use App\Models\UserAccount;
@@ -526,6 +527,30 @@ class OrderController
             $userPid = Users::query()->where('id', $orderInfo['user_id'])->value('p_id');
             # 查询用户上级的上级
             $userPpid = Users::query()->where('id', $userPid)->value('p_id');
+            # 新增流水购买记录
+            $newInfo = UserAccount::query()->where('user_id',$orderInfo['user_id'])->orderByDesc('id')->value('total_balance')??0;
+            $resAcc = UserAccount::query()->create([
+                'user_id'       => $orderInfo['user_id'],
+                'old_balance'   => $newInfo,
+                'profit'        => 0,
+                'total_balance' => $newInfo,
+                'type'          => 5,
+                'describe'      => '现金购买产品',
+                'is_ok'         => 1
+            ]);
+            if (!$resAcc) {
+                throw new ApiException("购买失败");
+            }
+            # 增加记录
+            PayOrder::query()->create([
+                'order_no'     => $orderInfo['order_no'] ?? '',
+                'user_id'      => $orderInfo['user_id'],
+                'total_amount' => $orderInfo['amount'],
+                'pay_status'   => 3,
+                'pay_type'     => $orderInfo['type'],
+                'pay_user'     => '',
+                'goods_id'     => $orderInfo['goods_id'],
+            ]);
             if ($userPid&&$userPid>0){
                 # 上级返利
                 $res = UserAccountService::userAccount($userPid, bcmul($orderInfo['amount'], $configList['distribution.one'], 2), '一级分销返利', 2);
